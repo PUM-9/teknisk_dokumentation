@@ -196,7 +196,21 @@ Systemet består i huvuddel av två stora komponenter: en registreringskomponent
 		Registreringskomponenten är implementerad som en klass i C++. Syftet med registreringen är att generera ett komplett punktmoln utifrån flera icke kompletta punktmoln. Registreringsklassen tar in en vektor med flera icke kompletta punktmoln. Klassen går sedan igenom alla punktmoln i vektorn och adderar dem till ett komplett punktmoln. För att uträtta detta används algoritmen ICP ifrån biblioteket PCL. Algoritmens metod för att registrera punktmolnen går ut på att minimera avståndet mellan punkterna i molnen. När sedan ett komplett punktmoln har genererats returneras detta.
 	
 	\subsection{Meshningskomponent}
-		Meshningskomponenten är implementerad som en klass i C++. Syftet med meshningen är att generera en 3D-mesh utifrån ett komplett punktmoln. En 3D-mesh är ett 3D-objekt uppbyggt av polygoner. Denna 3D-mesh används för att göra det möjligt att skriva ut objektet i en 3D-skrivare. Meshningsklassen tar in ett komplett punkmoln som parameter och tar sedan ut alla punkters normaler i molnet. För att generera en 3D-mesh används Poisson surface reconstruction algoritm. Algoritmen kräver en uppsättning av 3D-punkter med orienterade normaler för att kunna generera en mesh av objektet. Klassen returnerar sedan den färdiga meshen.
+		Meshningskomponenten är implementerad som en klass i C++. Syftet med meshningen är att generera en 3D-mesh utifrån ett komplett punktmoln. En 3D-mesh är ett 3D-objekt uppbyggt av polygoner. Denna 3D-mesh används för att göra det möjligt att skriva ut objektet i en 3D-skrivare. 
+		
+		Meshningsklassen tar in ett komplett punkmoln som parameter och tar sedan ut alla punkters normaler i molnet. För att generera en 3D-mesh används Poisson surface reconstruction (PSR) algoritm i PCL. Algoritmen kräver en uppsättning av 3D-punkter med orienterade normaler för att kunna generera en mesh av objektet. Klassen returnerar sedan den färdiga meshen.
+		
+		Vid meshning av ett objekt kan olika parametrar justeras, beroende på objekt, för att eventuellt förbättra den genererade meshens utseende. De parametrar som kan justeras presenteras nedan.
+		
+		\begin{itemize}
+			\item \textit{depth} - Sätter det maximala djupet i sökträdet som PSR använder sig av, högre värde betyder bättre resultat men blir mer beräkningstungt.
+			\item \textit{solver\_divide} - Denna parameter anger vilket djup ett Gauss-Seidel-solver block ska använda för att lösa Laplacian-ekvationen i PSR. Använda denna parameter hjälper att reducera minneskostnaden till en kostnad för rekonstrueringstid.
+			\item \textit{samples\_per\_node} - Specificerar det minsta antalet punkter som PSR sätter i en octree-nod då ytan rekonstrueras. Vid brusig punktdata kommer ett högt värde (6-10) jämna ut meshen, men riskerar att tappa detaljer av objektet. Ett lågt värde (1-5) behåller detaljerna men meshen kan bli mer oslipad.
+			\item \textit{point\_weight} -  Detta värde specificerar vikten av punkterna i interpoleringen i PSR.
+		\end{itemize}
+	
+		Den genererade meshen kommer med stor sannolikhet inte se ut som man önskat, oftast består den av oönskad massa. För att få meshen att se ut som man vill krävs det manuell handpåläggning av den genererade meshen. Att manuellt behandla en mesh fungerar ungefär som när man redigerar en bild i Photoshop eller en CAD-modell i Autodesk Inventor. Det finns flera olika verktyg för att behandla en mesh, bland annat Autodesk Meshmixer, Meshlab och Blender.
+		
 	
 	\subsection{Filter}
 		% Beskriv mer om filtret typ hur det filtrerar (typ vilka gränser osv)
