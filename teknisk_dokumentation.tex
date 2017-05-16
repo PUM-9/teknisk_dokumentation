@@ -193,7 +193,20 @@ Systemet består i huvuddel av två stora komponenter: en registreringskomponent
 	Nedan gås systemet igenom mer ingående.
 	
 	\subsection{Registreringskomponent}
-		Registreringskomponenten är implementerad som en klass i C++. Syftet med registreringen är att generera ett komplett punktmoln utifrån flera icke kompletta punktmoln. Registreringsklassen tar in en vektor med flera icke kompletta punktmoln. Klassen går sedan igenom alla punktmoln i vektorn och registrerar dessa parvis till ett komplett punktmoln. För att uträtta detta används algoritmen ICP ifrån biblioteket PCL. Algoritmens metod för att registrera punktmolnen går ut på att minimera avståndet mellan punkterna i molnen. När sedan ett komplett punktmoln har genererats returneras detta.
+		Registreringskomponenten är implementerad som en klass i C++. Syftet med registreringen är att generera ett komplett punktmoln utifrån flera icke kompletta punktmoln. Registreringsklassen tar in en vektor med flera icke kompletta punktmoln. Klassen går sedan igenom alla punktmoln i vektorn och registrerar dessa parvis till ett komplett punktmoln. För att uträtta detta används algoritmen ICP ifrån biblioteket PCL. Algoritmens metod för att registrera punktmolnen går ut på att minimera avståndet mellan punkterna i molnen. När sedan ett komplett punktmoln har genererats returneras detta. För registrering finns följande parametrar som kan ändras:
+		
+		\begin{itemize}
+			\item Max Iterations - anger hur många registreringsiterationer som algoritmen får utföra innan den tvingas avsluta.
+			\item Transformation Epsilon - avgör hur stor förﬂyttning algoritmen får göra på målmolnet inom en iteration. 
+			
+			\item Max Correspondence Distance - anger hur stort avståndet från en punkt i ursprungsmolnet till motsvarande punkt i målmolnet får vara. Är avståndet större än detta kommer algoritmen ignorera punkten i målmolnet vid registreringsförsöket. 
+			
+			\item RANSAC Outlier Rejection Threshold - anger hur stort avstånd som en punkt tillåts existera från den antagna matematiska modellen för att användas i registreringen. RANSAC, Random Sample Consensus är en metod för att avgöra om en punkt följer det matematiska mönster som algoritmen letar efter.
+			
+			\item Euclidean Fitness Epsilon - representerar det fel som accepteras. Är skillnaden i felet mellan två iterationer mindre än det här kommer algoritmen avsluta.
+			 
+		\end{itemize}
+	Dessa parametrar kan ändras för att optimera registreringen för specifika punktmoln. 
 	
 	\subsection{Meshningskomponent}
 		Meshningskomponenten är implementerad som en klass i C++. Syftet med meshningen är att generera en 3D-mesh utifrån ett komplett punktmoln. En 3D-mesh är ett 3D-objekt uppbyggt av polygoner. Denna 3D-mesh används för att göra det möjligt att skriva ut objektet i en 3D-skrivare. 
