@@ -186,6 +186,8 @@ Linköpings Tekniska Högskola, IDA
 \section{Systemöversikt av 3DCopy}
 Systemet består i huvuddel av två stora komponenter: en registreringskomponent och en meshningskomponent. Registreringskomponenten har som syfte att registrera punktmoln så att de bildar en komplett eller fullständig modell av ett punktmoln. Meshningskomponenten har som syfte att generera en 3D-mesh utifrån det kompletta punktmoln som registrerats i registreringskomponenten eller utifrån ett annat komplett punktmoln. Systemet innehåller också ett filter vars syfte är att filtrera olika punktmoln vid behov. Detta för att ta bort onödiga/redundanta punkter. Det finns också ett CLI och ett GUI för att kunna använda själva programmet. 
 
+\newpage
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %					Systemet
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,7 +199,8 @@ Systemet består i huvuddel av två stora komponenter: en registreringskomponent
 		
 		\begin{itemize}
 			\item Max Iterations - anger hur många registreringsiterationer som algoritmen får utföra innan den tvingas avsluta.
-			\item Transformation Epsilon - avgör hur stor förﬂyttning algoritmen får göra på målmolnet inom en iteration. 
+			
+			\item Transformation Epsilon - avgör hur stor förflyttning algoritmen får göra på målmolnet inom en iteration.
 			
 			\item Max Correspondence Distance - anger hur stort avståndet från en punkt i ursprungsmolnet till motsvarande punkt i målmolnet får vara. Är avståndet större än detta kommer algoritmen ignorera punkten i målmolnet vid registreringsförsöket. 
 			
@@ -224,23 +227,42 @@ Systemet består i huvuddel av två stora komponenter: en registreringskomponent
 	
 		Den genererade meshen kommer med stor sannolikhet inte se ut som man önskat, oftast består den av oönskad massa. För att få meshen att se ut som man vill krävs det manuell handpåläggning av den genererade meshen. Att manuellt behandla en mesh fungerar ungefär som när man redigerar en bild i Photoshop eller en CAD-modell i Autodesk Inventor. Det finns flera olika verktyg för att behandla en mesh, bland annat Autodesk Meshmixer, Meshlab och Blender.
 		
-	
-	\subsection{Filter}
-		% Beskriv mer om filtret typ hur det filtrerar (typ vilka gränser osv)
-		Filtret är uppbyggt för att kunna filtrera punktmoln som är insamlade med TreeD och den tillhörande hårdvaran till det systemet. För att kunna användas i 3DCopy ser filtret till att eventuell skräpdata filtreras bort och ser även till att pinnen som håller i föremålet som skannas tas bort. Filtret flyttar även objektet till origo i koordinatsystemet. Efter filtreringen är punktmolnet redo att registreras och användas i 3DCopy.
-		
 \newpage
- 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %					Användargränssnitt
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Användargränssnitt}
-	\subsection{Serverapplikation/webbapplikation}
-		%% Skriv hur det är uppbyggt
+\subsection{Serverapplikation/webbapplikation}
+%% Skriv hur det är uppbyggt
+
+\subsection{Kommandoradsgränssnittet}
+Kommandoradsgränssnittets syfte är att göra det möjligt att använda systemet genom kommandoradsanrop. Kommandoradsgränsnittet är implementerad som en klass i C++ och tar alltså in anrop ifrån kommandoraden och utför sedan den önskade funktionen som angivits. Kommandoradsgränsnittet integrerar registrerings- och meshningsklassen till ett körbart program som gör det möjligt att generera en utskriftsbar 3D-mesh utifrån flera stycken icke kompletta punktmoln.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%					Skanning och filtrering
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\section{Skanning och filtrering}
+	För att kunna använda den hårdvara som CVL har tillgång till krävs att de punktmoln som fås av systemet TreeD behandlas för att filtrera bort skräpdata och placera objekten rätt. Detta görs av två separata program som tar skanningar och filtrerar dessa så att de kan användas med 3DCopy: TreeD-Wrapper och filtret.
 	
-	\subsection{Kommandoradsgränssnittet}
-		Kommandoradsgränssnittets syfte är att göra det möjligt att använda systemet genom kommandoradsanrop. Kommandoradsgränsnittet är implementerad som en klass i C++ och tar alltså in anrop ifrån kommandoraden och utför sedan den önskade funktionen som angivits. Kommandoradsgränsnittet integrerar registrerings- och meshningsklassen till ett körbart program som gör det möjligt att generera en utskriftsbar 3D-mesh utifrån flera stycken icke kompletta punktmoln.
-	
+	\subsection{Filter}
+		Filtret är uppbyggt för att kunna filtrera punktmoln som är insamlade med TreeD och den tillhörande hårdvaran till det systemet. För att kunna användas i 3DCopy ser filtret till att eventuell skräpdata filtreras bort och ser även till att pinnen som håller i föremålet som skannas tas bort. Filtret flyttar även objektet till origo i koordinatsystemet och ser till att det har rätt rotation. Efter filtreringen är punktmolnet redo att registreras och användas i 3DCopy.
+		
+		Det första steget som filtret utför är att ta bort alla punkter som ligger utanför ett visst intervall av koordinater. Detta gör att punkter som ligger långt utanför det skannade objektet tas bort. Detta tar alltså bort punkter som kommer från väggen bakom objektet och andra punkter som inte kan vara en del av objektet.
+		
+		Nästa steg är att ta bort enskilda punkter. Detta görs genom att filtret går igenom varje punkt och räknar hur många grannar den punkten har inom en viss radie. Om punkten har för få grannar betyder det att den ligger långt ifrån andra punkter och inte sitter nära något objekt, alltså tas den bort.
+		
+		Sista steget är att ta bort pinnen som håller i objektet. Då objektet kan sitta på olika höjd i hårdvaran går det inte att filtrera på koordinater rakt av. Istället delas punktmolnet upp i kluster och sedan räknas en \textit{centroid}, ungefär som en tyngdpunkt, ut för varje kluster. Sedan räknas de kluster vars tyngdpunkt ligger under en viss gräns, som kan bestämmas av användaren, som pinnen och resten räknas som det faktiska objektet. Detta utnyttjas även för att placera objektet exakt i origo. Eftersom pinnen sitter i mitten av objektet räknas den transformation ut som behövs för att placera pinnen exakt i origo. Sedan används denna transformation även på objektet vilket resulterar i att objektet alltid ligger väldigt bra placerat inför registreringen.
+		
+		Filtret är implementerat som en klass kallad \texttt{Filter} i C++ vilket gör att det kan användas i annan kod genom att inkludera \texttt{Filter.h} och använda den klassen. För att underlätta filtreringen av punktmoln finns även ett kommandoradsgränssnitt som kan köras för att filtrera ett eller fler punktmoln.
+		
+	\subsection{TreeD-Wrapper}
+		För att kunna använda TreeD för att ta ett flertal skanningar och samtidigt filtrera och placera dessa rätt i koordinatsystemet finns en TreeD-Wrapper. Funktionaliteten för denna finns i treed\_wrapper.py och den tillhandahåller ett kommandoradsgränssnitt för att köra ett antal skanningar av objektet från olika vinklar och lutningar. Alla skanningar filtreras också med filtret ovan för att ge punktmoln som kan användas för registrering i 3DCopy.
+		
+		Då TreeD har visat sig inte vara helt stabilt har TreeD-Wrapper gott om felhantering. Om något fel sker kommer programmet stanna och skriva ut ett felmeddelande på terminalen. Detta gör att användaren kan åtgärda felet och sedan starta om TreeD-Wrapper. Den kommer då fortsätta där den var innan felet uppstod vilket gör det möjligt att ta många skanningar trots att det underliggande systemet kraschar då och då.
+		
 \newpage
 
 
