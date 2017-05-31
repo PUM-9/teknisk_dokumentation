@@ -233,13 +233,22 @@ Systemet består i huvuddel av två stora komponenter: en registreringskomponent
 %					Användargränssnitt
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Användargränssnitt}
-\subsection{Serverapplikation/webbapplikation}
-%% Skriv hur det är uppbyggt
+\subsection{Webbapplikation}
+En liten disclaimer, i det här avsnittet kommer en del termer användas utan någon direkt förklaring. Detta är för att det tar alldeles för lång tid och förklara och det finns fantastiska förklaringar, tutorials och dokumentationer på internet. Så är det något du inte förstår, googla.
 
+Eftersom registreringen är rätt så beräkningstung och inte är parallelliserad valde vi att göra om GUI:t till en webbapplikation. Applikationen som blev slutresultatet är mer ett bevis på att konceptet fungerar än en färdig webbapplikation. Den fungerar men saknar mycket av den funktionalitet som man skulle vilja ha, till exempel användarhantering. 
+
+Den applikation som finns är skriven i Python med hjälp av ramverket Django. Är du intresserad av hur de fungerar eller inte vet vad det är och ska arbeta vidare med webbapplikationen så bör du läsa på mer om Django på deras hemsida (https://www.djangoproject.com/). Det finns två stycken Django appar som används \textit{frontend} och \textit{jobs}. 
+
+\textit{Frontend} hanterar templates, css och views. Allt som behövs för att användaren ska kunna interagera med systemet. Bootstrap som är ett bibliotek för CSS och JavaScript som vi använder för att vår frontend ska se fin ut. Applikationen använder bootstrap från en CDN och om den körs lokalt behöver datorn internetåtkomst för att det ska fungera.
+
+\textit{Jobs} tillhandahåller Django models för registrering och meshningsjobb. Dessa exikveras med genom att applikationen kör subprocesser med instanser av 3DCopy. Webbapplikationen tillhandahåller alltså bara en databas för att spara jobb som ska utföras och när de ska utföras görs detta genom kommandoradsgränssnittet för 3DCopy i en egen process.
+ 
 \subsection{Kommandoradsgränssnittet}
 Kommandoradsgränssnittets syfte är att göra det möjligt att använda systemet genom kommandoradsanrop. Kommandoradsgränsnittet är implementerad som en klass i C++ och tar alltså in anrop ifrån kommandoraden och utför sedan den önskade funktionen som angivits. Kommandoradsgränsnittet integrerar registrerings- och meshningsklassen till ett körbart program som gör det möjligt att generera en utskriftsbar 3D-mesh utifrån flera stycken icke kompletta punktmoln.
 
-\newpage
+För att ta in kommandon från terminalen används boosts bibliotek. Boost är ett stort C++ bibliotek och det finns massor av information om det på internet. Boost används även för att hantera inläsning av filer. Detta fungerar väldigt bra man kan använda regex och massa bra saker för att beskriva vilka filer man vill att programmet ska ta in. Det enda problemet är att om man specificerar en mapp så tar inte 3DCopy in filerna i ordning utan de tas in slumpmässigt på grund av boost. Rekommenderat är därför att använda regex eller specificera alla filer som 3DCopy ska använda i ordning. Eftersom ordningen är viktig för registreringen.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %					Skanning och filtrering
